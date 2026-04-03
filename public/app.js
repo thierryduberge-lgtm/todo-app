@@ -5,7 +5,7 @@ const compteur = document.getElementById('compteur');
 
 // Récupération sécurisée des outils Firebase
 const { collection, addDoc, onSnapshot, query, updateDoc, doc, deleteDoc, orderBy } = window.fdb;
-const tachesCol = collection(window.db, 'taches');
+const tachesCol = collection(window.db, 'stockage todo-list');
 
 // On demande les tâches triées par date de création
 const q = query(tachesCol, orderBy("createdAt", "asc"));
