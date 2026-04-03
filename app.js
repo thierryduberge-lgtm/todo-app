@@ -3,69 +3,59 @@ const btnAjouter = document.getElementById('btnAjouter');
 const liste = document.getElementById('listeTaches');
 const compteur = document.getElementById('compteur');
 
-function sauvegarder(taches) {
-  localStorage.setItem('taches', JSON.stringify(taches));
-}
+// Récupération sécurisée des outils Firebase
+const { collection, addDoc, onSnapshot, query, updateDoc, doc, deleteDoc, orderBy } = window.fdb;
+const tachesCol = collection(window.db, 'taches');
 
-function charger() {
-  const data = localStorage.getItem('taches');
-  return data ? JSON.parse(data) : [];
-}
+// On demande les tâches triées par date de création
+const q = query(tachesCol, orderBy("createdAt", "asc"));
 
-function mettreAJourCompteur(taches) {
-  const restantes = taches.filter(t => !t.terminee).length;
-  compteur.textContent = restantes + ' tâche(s) restante(s)';
-}
-
-function afficher() {
-  const taches = charger();
+// Écoute Live de Firestore
+onSnapshot(q, (snapshot) => {
   liste.innerHTML = '';
+  let totalRestantes = 0;
 
-  taches.forEach((tache, index) => {
+  snapshot.forEach((docSnap) => {
+    const tache = docSnap.data();
+    const id = docSnap.id;
+    if (!tache.terminee) totalRestantes++;
+
     const li = document.createElement('li');
     if (tache.terminee) li.classList.add('terminee');
 
-    const cercle = document.createElement('div');
-    cercle.classList.add('cercle');
-    cercle.addEventListener('click', () => {
-      taches[index].terminee = !taches[index].terminee;
-      sauvegarder(taches);
-      afficher();
-    });
+    li.innerHTML = `
+      <div class="cercle"></div>
+      <span>${tache.texte}</span>
+      <button>✕</button>
+    `;
 
-    const span = document.createElement('span');
-    span.textContent = tache.texte;
+    // Clic sur le cercle pour valider/dévalider
+    li.querySelector('.cercle').onclick = () => {
+      updateDoc(doc(window.db, 'taches', id), { terminee: !tache.terminee });
+    };
 
-    const btn = document.createElement('button');
-    btn.textContent = '✕';
-    btn.addEventListener('click', () => {
-      taches.splice(index, 1);
-      sauvegarder(taches);
-      afficher();
-    });
+    // Clic sur la croix pour supprimer
+    li.querySelector('button').onclick = () => {
+      deleteDoc(doc(window.db, 'taches', id));
+    };
 
-    li.appendChild(cercle);
-    li.appendChild(span);
-    li.appendChild(btn);
     liste.appendChild(li);
   });
 
-  mettreAJourCompteur(taches);
-}
+  compteur.textContent = totalRestantes + ' tâche(s) restante(s)';
+});
 
-btnAjouter.addEventListener('click', () => {
+// Ajouter une tâche sur Firestore
+btnAjouter.onclick = async () => {
   const texte = input.value.trim();
-  if (texte === '') return;
-
-  const taches = charger();
-  taches.push({ texte: texte, terminee: false });
-  sauvegarder(taches);
+  if (!texte) return;
+  
+  await addDoc(tachesCol, {
+    texte: texte,
+    terminee: false,
+    createdAt: Date.now()
+  });
   input.value = '';
-  afficher();
-});
+};
 
-input.addEventListener('keypress', (e) => {
-  if (e.key === 'Enter') btnAjouter.click();
-});
-
-afficher();
+input.onkeypress = (e) => { if (e.key === 'Enter') btnAjouter.click(); };
