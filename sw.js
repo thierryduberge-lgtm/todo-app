@@ -1,29 +1,25 @@
-const CACHE = 'todo-v1';
+const CACHE = 'todo-v2'; // <--- Change le nom ici à chaque grosse modif
+
+// On ne met en cache que les fichiers de base
 const FICHIERS = [
   './',
   './index.html',
   './style.css',
-  './app.js',
   './manifest.json',
   './icone.svg'
 ];
 
 self.addEventListener('install', e => {
+  // Force le nouveau SW à prendre le contrôle immédiatement
+  self.skipWaiting();
   e.waitUntil(
     caches.open(CACHE).then(cache => cache.addAll(FICHIERS))
   );
 });
 
 self.addEventListener('fetch', e => {
+  // Stratégie : Réseau d'abord, Cache sinon (meilleur pour le dev)
   e.respondWith(
-    caches.match(e.request).then(response => {
-      return response || fetch(e.request);
-    })
+    fetch(e.request).catch(() => caches.match(e.request))
   );
 });
-
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js')
-    .then(() => console.log('Service Worker installé'))
-    .catch(err => console.log('Erreur :', err));
-}

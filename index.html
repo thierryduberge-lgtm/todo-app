@@ -23,20 +23,20 @@
       import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
       import { getFirestore, collection, addDoc, onSnapshot, query, updateDoc, doc, deleteDoc, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-      // REMPLACE CES VALEURS PAR CELLES DE TA CONSOLE FIREBASE
-      const firebaseConfig = {
-        apiKey: "1:805449096641:web:3337cb01715ab660daa340",
-        authDomain: "stockage-todo-list.firebaseapp.com",
-        projectId: "stockage-todo-list",
-        storageBucket: "stockage-todo-list.appspot.com",
-        messagingSenderId: "...",
-        appId: "..."
-      };
+    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+    const firebaseConfig = {
+      apiKey: "AIzaSyAcnxuL_FNbqvpwCZ1G72ukoykj56BXat4",
+      authDomain: "stockage-todo-list.firebaseapp.com",
+      projectId: "stockage-todo-list",
+      storageBucket: "stockage-todo-list.firebasestorage.app",
+      messagingSenderId: "805449096641",
+      appId: "1:805449096641:web:3337cb01715ab660daa340",
+      measurementId: "G-D7PFYB537Q"
+};
 
       const app = initializeApp(firebaseConfig);
       const db = getFirestore(app);
 
-      // On expose les fonctions à app.js via l'objet global window
       window.db = db;
       window.fdb = { collection, addDoc, onSnapshot, query, updateDoc, doc, deleteDoc, orderBy };
   </script>
